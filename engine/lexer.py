@@ -115,7 +115,7 @@ class Lexer:
             content += self._advance() # include the negation ^
 
         # allow ] as first char inside class 
-        if self._pos < len(self._pattern) and self._current == "]":
+        if self._pos < len(self._pattern) and self._current() == "]":
             content += self._advance()
 
         while self._pos < len(self._pattern):

@@ -3,7 +3,7 @@ from typing import Optional
 
 from .lexer import Lexer, Token, TokenType
 from .models import (
-    ASTNode, LiteralNode, DotNode, AchorStartNode, AnchorEndNode,
+    ASTNode, LiteralNode, DotNode, AnchorStartNode, AnchorEndNode,
     EscapeNode, CharClassNode, ConcatNode, AlternationNode,
     QuantifierNode, GroupNode,
 )
@@ -42,10 +42,10 @@ class Parser:
 
     # grammar rules below
 
-    def _prase_alternation(self) -> ASTNode:
-        branches: list[ASTNode] = [self_parse_concat()]
+    def _parse_alternation(self) -> ASTNode:
+        branches: list[ASTNode] = [self._parse_concat()]
         while self._peek().type == TokenType.PIPE:
-            self._advance
+            self._advance()
             branches.append(self._parse_concat())
         if len(branches) == 1:
             return branches[0]
@@ -105,16 +105,16 @@ class Parser:
             self._advance()
             self._group_counter += 1
             idx = self._group_counter
-            inner = self._prase_alternation()
+            inner = self._parse_alternation()
             self._expect(TokenType.RPAREN)
             return GroupNode(child=inner, group_index=idx)
 
-        return ParseError(
+        raise ParseError(
             f"Unexpected token {tok.type.name} ({tok.value!r}) at position {tok.position}",
             tok.position,
         )
 
-        def _parse_char_class_token(self, tok: Token) -> CharClassNode:
+    def _parse_char_class_token(self, tok: Token) -> CharClassNode:
             """
             Parses the values of a CHAR_CLASS token like "[a-z]" or "[^0-9]"
             """
@@ -126,20 +126,20 @@ class Parser:
 
             return CharClassNode(members=inner, negated=negated)
 
-        def _peek(self) -> Token:
-            return self._tokens[self._pos]
+    def _peek(self) -> Token:
+        return self._tokens[self._pos]
 
-        def _advance(self) -> Token:
-            tok = sef._tokens[self._pos]
-            if tok.type != TokenType.EOF:
-                self._pos += 1
-            return tok
+    def _advance(self) -> Token:
+        tok = self._tokens[self._pos]
+        if tok.type != TokenType.EOF:
+            self._pos += 1
+        return tok
 
-        def _expect(self, ttype: TokenType) -> Token:
-            tok = self._advance()
-            if tok.type != ttype:
-                raise ParseError(
-                    f"Expected {ttype.name} but got {tok.type.name} at position {tok.position}",
-                    tok.position,
-                )
-            return tok
+    def _expect(self, ttype: TokenType) -> Token:
+        tok = self._advance()
+        if tok.type != ttype:
+            raise ParseError(
+                f"Expected {ttype.name} but got {tok.type.name} at position {tok.position}",
+                tok.position,
+            )
+        return tok
