@@ -18,6 +18,7 @@ class TokenType(Enum):
     ANCHOR_START = auto()  # ^ at the start of the pattern
     ESCAPE = auto()
     CHAR_CLASS = auto()
+    QUANTIFIER = auto()
     EOF = auto()
 
 
@@ -86,7 +87,9 @@ class Lexer:
             "$": TokenType.DOLLAR,
         }
 
-        if ch == "\\":
+        if ch == "{":
+            self._read_brace_quantifier(pos)
+        elif ch == "\\":
             self._read_escape(pos)
         elif ch == "[":
             self._read_char_class(pos)
@@ -133,3 +136,34 @@ class Lexer:
                 content += self._advance()  # include the escaped char
 
         raise LexerError("Unterminated character class", start)
+
+    def _read_brace_quantifier(self, start: int) -> None:
+        """ "
+        Attempt to read {n}, {n,} or {n, m} as a QUANTIFIER token
+
+        If the content does not match the expected format, fall back
+        to emitting as a literal
+        """
+
+        saved_pos = self._pos
+        content = "{"
+
+        while self._pos < len(self._pattern) and self._current() != "}":
+            content += self._advance()
+
+        if self._pos >= len(self._pattern):
+            self._pos = saved_pos
+            self._tokens.append(Token(TokenType.LITERAL, "{", start))
+            return
+
+        content += self._advance()  # consume the closing }
+        inner = content[1:-1]
+
+        import re as _re
+
+        if not _re.fullmatch(r"\d+(,\d*)?", inner):
+            self._pos = saved_pos
+            self._tokens.append(Token(TokenType.LITERAL, "{", start))
+            return
+
+        self._tokens.append(Token(TokenType.QUANTIFIER, content, start))

@@ -87,6 +87,9 @@ class Parser:
         if tok.type == TokenType.QUESTION:
             self._advance()
             return QuantifierNode(child=atom, min=0, max=1)
+        if tok.type == TokenType.QUANTIFIER:
+            self._advance()
+            return self._parse_brace_quantifier(tok, atom)
         return atom
 
     def _parse_atom(self) -> ASTNode:
@@ -158,3 +161,26 @@ class Parser:
                 tok.position,
             )
         return tok
+
+    def _parse_brace_quantifier(self, tok: Token, atom: ASTNode) -> QuantifierNode:
+        """
+        Parse a QUANTIFIER token value like {3}, {2,}, {1,4} into min/max
+        """
+
+        inner = tok.value[1:-1]
+
+        if "," not in inner:
+            n = int(inner)
+            return QuantifierNode(child=atom, min=n, max=n)
+
+        left, right = inner.split(",", 1)
+        min_val = int(left)
+        max_val = int(right) if right else None # {n,} means unbounded
+
+        if max_val is not None and max_val < min_val:
+            raise ParseError(
+                "Invalid quantifier {{{inner}}}: max ({max_val}) < min({min_val})",
+                tok.position
+            )
+
+        return QuantifierNode(child=atom, min=min_val, max=max_val)
