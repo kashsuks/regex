@@ -1,13 +1,24 @@
 from __future__ import annotations
+
 from re import PatternError, escape
 from typing import Optional
 
 from .models import (
-    ASTNode, LiteralNode, DotNode, AnchorStartNode, AnchorEndNode,
-    EscapeNode, CharClassNode, ConcatNode, AlternationNode,
-    QuantifierNode, GroupNode, MatchResult
+    AlternationNode,
+    AnchorEndNode,
+    AnchorStartNode,
+    ASTNode,
+    CharClassNode,
+    ConcatNode,
+    DotNode,
+    EscapeNode,
+    GroupNode,
+    LiteralNode,
+    MatchResult,
+    QuantifierNode,
 )
 from .parser import Parser
+
 
 class Matcher:
     """
@@ -51,13 +62,15 @@ class Matcher:
             end = self._match_node(self._ast, text, pos)
             if end is not None:
                 groups = self._collect_groups(text)
-                results.append(MatchResult(
-                    matched=True,
-                    start=pos,
-                    end=end,
-                    span=text[pos:end],
-                    groups=groups,
-                ))
+                results.append(
+                    MatchResult(
+                        matched=True,
+                        start=pos,
+                        end=end,
+                        span=text[pos:end],
+                        groups=groups,
+                    )
+                )
                 pos = end if end > pos else pos + 1
             else:
                 pos += 1
@@ -66,7 +79,7 @@ class Matcher:
     def _match_node(self, node: ASTNode, text: str, pos: int) -> optional[int]:
         """
         Try to match node against text starting at pos
-        
+
         Returns the new position on success, None on failure
         """
         if isinstance(node, LiteralNode):
@@ -74,7 +87,7 @@ class Matcher:
 
         if isinstance(node, DotNode):
             return self._match_dot(text, pos)
-        
+
         if isinstance(node, AnchorStartNode):
             return pos if pos == 0 else None
 
@@ -101,7 +114,6 @@ class Matcher:
 
         raise RuntimeError(f"Unknown AST node type: {type(node)}")
 
-
     # node specific matchers
 
     def _match_literal(self, node: LiteralNode, text: str, pos: int) -> Optional[int]:
@@ -118,7 +130,7 @@ class Matcher:
         if pos >= len(text):
             return None
         ch = text[pos]
-        seq = node.sequence # eg "\\d"
+        seq = node.sequence  # eg "\\d"
         code = seq[1]
 
         matched = False
@@ -146,7 +158,9 @@ class Matcher:
 
         return pos + 1 if matched else None
 
-    def _match_char_class(self, node: CharClassNode, text: str, pos: int) -> Optional[int]:
+    def _match_char_class(
+        self, node: CharClassNode, text: str, pos: int
+    ) -> Optional[int]:
         if pos >= len(text):
             return None
         ch = text[pos]
@@ -187,20 +201,26 @@ class Matcher:
             current = result
         return current
 
-    def _match_alternation(self, node: AlternationNode, text: str, pos: int) -> Optional[int]:
+    def _match_alternation(
+        self, node: AlternationNode, text: str, pos: int
+    ) -> Optional[int]:
         for alt in node.alternatives:
             result = self._match_node(alt, text, pos)
             if result is not None:
                 return result
         return None
 
-    def _match_quantifier(self, node: QuantifierNode, text: str, pos: int) -> Optional[int]:
+    def _match_quantifier(
+        self, node: QuantifierNode, text: str, pos: int
+    ) -> Optional[int]:
         """
         A greedy quantifier matching with backtracking
         """
         return self._greedy_match(node, text, pos, 0)
 
-    def _greedy_match(self, node: QuantifierNode, text: str, pos: int, count: int) -> Optional[int]:
+    def _greedy_match(
+        self, node: QuantifierNode, text: str, pos: int, count: int
+    ) -> Optional[int]:
         if node.max is not None and count >= node.max:
             return pos
 
@@ -208,7 +228,7 @@ class Matcher:
         if result is not None and result != pos:
             # try a greedy consumption first
             deeper = self._greedy_match(node, text, result, count + 1)
-            
+
             if deeper is not None:
                 return deeper
 
@@ -233,7 +253,6 @@ class Matcher:
 
         max_idx = max(self._groups.keys())
         return [
-            text[self._groups[i][0]: self._groups[i][1]]
-            if i in self._groups else ""
+            text[self._groups[i][0] : self._groups[i][1]] if i in self._groups else ""
             for i in range(1, max_idx + 1)
         ]

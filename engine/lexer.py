@@ -1,5 +1,6 @@
-from enum import Enum, auto
 from dataclasses import dataclass
+from enum import Enum, auto
+
 
 class TokenType(Enum):
     LITERAL = auto()
@@ -14,10 +15,11 @@ class TokenType(Enum):
     RBRACKET = auto()
     CARET = auto()
     DOLLAR = auto()
-    ANCHOR_START = auto() # ^ at the start of the pattern
+    ANCHOR_START = auto()  # ^ at the start of the pattern
     ESCAPE = auto()
     CHAR_CLASS = auto()
     EOF = auto()
+
 
 @dataclass
 class Token:
@@ -28,15 +30,17 @@ class Token:
     def __repr__(self) -> str:
         return f"Token{self.type.name}, {self.value!r}, pos={self.position}"
 
+
 class LexerError(Exception):
     def __init__(self, message: str, position: int):
         super().__init__(message)
         self.position = position
 
+
 class Lexer:
     """
     Tokenizes a regex pattern string into a list of Token objects
-    
+
     Supports: literals, . * + ? | () [] ^ $ \\ escapes
     """
 
@@ -47,7 +51,7 @@ class Lexer:
         self._pos = 0
         self._tokens: list[Token] = []
 
-    def tokenize(self) ->  list[Token]:
+    def tokenize(self) -> list[Token]:
         self._tokens = []
         self._pos = 0
 
@@ -112,9 +116,9 @@ class Lexer:
 
         content = "["
         if self._pos < len(self._pattern) and self._current() == "^":
-            content += self._advance() # include the negation ^
+            content += self._advance()  # include the negation ^
 
-        # allow ] as first char inside class 
+        # allow ] as first char inside class
         if self._pos < len(self._pattern) and self._current() == "]":
             content += self._advance()
 
@@ -126,6 +130,6 @@ class Lexer:
                 self._tokens.append(Token(TokenType.CHAR_CLASS, content, start))
                 return
             if ch == "\\" and self._pos < len(self._pattern):
-                content += self._advance() # include the escaped char
+                content += self._advance()  # include the escaped char
 
         raise LexerError("Unterminated character class", start)

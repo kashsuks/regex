@@ -1,19 +1,30 @@
 from __future__ import annotations
+
 from typing import Optional
+
+from engine import lexer
 
 from .lexer import Lexer, Token, TokenType
 from .models import (
-    ASTNode, LiteralNode, DotNode, AnchorStartNode, AnchorEndNode,
-    EscapeNode, CharClassNode, ConcatNode, AlternationNode,
-    QuantifierNode, GroupNode,
+    AlternationNode,
+    AnchorEndNode,
+    AnchorStartNode,
+    ASTNode,
+    CharClassNode,
+    ConcatNode,
+    DotNode,
+    EscapeNode,
+    GroupNode,
+    LiteralNode,
+    QuantifierNode,
 )
 
-from engine import lexer
 
 class ParseError(Exception):
     def __init__(self, message: str, position: int = -1):
         super().__init__(message)
         self.position = position
+
 
 class Parser:
     """
@@ -53,7 +64,11 @@ class Parser:
 
     def _parse_concat(self) -> ASTNode:
         children: list[ASTNode] = []
-        while self._peek().type not in (TokenType.EOF, TokenType.PIPE, TokenType.RPAREN):
+        while self._peek().type not in (
+            TokenType.EOF,
+            TokenType.PIPE,
+            TokenType.RPAREN,
+        ):
             children.append(self._parse_quantified())
         if len(children) == 1:
             return children[0]
@@ -115,16 +130,16 @@ class Parser:
         )
 
     def _parse_char_class_token(self, tok: Token) -> CharClassNode:
-            """
-            Parses the values of a CHAR_CLASS token like "[a-z]" or "[^0-9]"
-            """
-            raw = tok.value
-            inner = raw[1:-1] # strip []
-            negated = inner.startswith("^")
-            if negated:
-                inner = inner[1:]
+        """
+        Parses the values of a CHAR_CLASS token like "[a-z]" or "[^0-9]"
+        """
+        raw = tok.value
+        inner = raw[1:-1]  # strip []
+        negated = inner.startswith("^")
+        if negated:
+            inner = inner[1:]
 
-            return CharClassNode(members=inner, negated=negated)
+        return CharClassNode(members=inner, negated=negated)
 
     def _peek(self) -> Token:
         return self._tokens[self._pos]

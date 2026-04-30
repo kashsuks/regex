@@ -1,14 +1,16 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, jsonify, render_template, request
 
 from engine import Matcher
-from engine.lexer  import LexerError
+from engine.lexer import LexerError
 from engine.parser import ParseError
 
 main_bp = Blueprint("main", __name__)
 
+
 @main_bp.route("/")
 def index():
     return render_template("index.html")
+
 
 @main_bp.route("/api/match", methods=["POST"])
 def api_match():
@@ -40,5 +42,5 @@ def api_match():
 
     except (LexerError, ParseError) as exc:
         return jsonify({"results": [], "error": str(exc)})
-    except Exception as exc: # noqa: BLE001
+    except Exception as exc:  # noqa: BLE001
         return jsonify({"results": [], "error": f"Unexpected error: {exc}"})
