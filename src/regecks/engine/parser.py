@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import Optional
 
-from engine import lexer
-
 from .lexer import Lexer, Token, TokenType
 from .models import (
     AlternationNode,
@@ -175,12 +173,12 @@ class Parser:
 
         left, right = inner.split(",", 1)
         min_val = int(left)
-        max_val = int(right) if right else None # {n,} means unbounded
+        max_val = int(right) if right else None  # {n,} means unbounded
 
         if max_val is not None and max_val < min_val:
             raise ParseError(
-                "Invalid quantifier {{{inner}}}: max ({max_val}) < min({min_val})",
-                tok.position
+                f"Invalid quantifier {{{inner}}}: max ({max_val}) < min({min_val})",
+                tok.position,
             )
 
         return QuantifierNode(child=atom, min=min_val, max=max_val)

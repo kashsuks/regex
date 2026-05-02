@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from re import PatternError, escape
 from typing import Optional
 
 from .models import (
@@ -76,7 +75,7 @@ class Matcher:
                 pos += 1
         return results
 
-    def _match_node(self, node: ASTNode, text: str, pos: int) -> optional[int]:
+    def _match_node(self, node: ASTNode, text: str, pos: int) -> Optional[int]:
         """
         Try to match node against text starting at pos
 

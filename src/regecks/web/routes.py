@@ -1,8 +1,8 @@
 from flask import Blueprint, jsonify, render_template, request
 
-from rx.engine import Matcher
-from rx.engine.lexer import LexerError
-from rx.engine.parser import ParseError
+from regecks.engine import Matcher
+from regecks.engine.lexer import LexerError
+from regecks.engine.parser import ParseError
 
 main_bp = Blueprint("main", __name__)
 
