@@ -1,0 +1,44 @@
+Screen {
+    background: $background;
+}
+
+#main {
+    padding: 1 2;
+}
+
+.field-label {
+    color: $text-muted;
+    text-style: bold;
+    margin-top: 1;
+    margin-bottom: 0;
+}
+
+Input {
+    margin-bottom: 0;
+}
+
+#controls {
+    margin-top: 1;
+    height: auto;
+    align: left middle;
+}
+
+#mode {
+    height: auto;
+    border: none;
+    background: transparent;
+    padding: 0;
+}
+
+#error-msg {
+    color: $error;
+    background: $error 10%;
+    border: solid $error;
+    padding: 0 1;
+    margin-top: 1;
+    height: auto;
+}
+
+.hidden {
+    display: none;
+}

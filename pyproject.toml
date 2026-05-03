@@ -20,7 +20,9 @@ regecks = "regecks.__main__:main"
 packages = ["src/regecks"]
 
 [tool.uv]
-python = "3.11"
+python-preference = "only-managed"
+
+[dependency-groups]
 dev-dependencies = [
     "pytest>=8.0",
     "pytest-asyncio>=0.23",

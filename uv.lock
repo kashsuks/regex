@@ -278,7 +278,7 @@ dependencies = [
 ]
 
 [package.dev-dependencies]
-dev = [
+dev-dependencies = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
 ]
@@ -290,7 +290,7 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-dev = [
+dev-dependencies = [
     { name = "pytest", specifier = ">=8.0" },
     { name = "pytest-asyncio", specifier = ">=0.23" },
 ]

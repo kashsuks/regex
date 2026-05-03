@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-from functools import Placeholder
-
 from textual.app import App, ComposeResult
-from textual.bidning import Binding
+from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
 from textual.widgets import Footer, Header, Input, Label, RadioButton, RadioSet, Static
 
