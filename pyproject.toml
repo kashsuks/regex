@@ -9,7 +9,6 @@ description = "A from-scratch regular expression engine with TUI"
 readme = "README.md"
 requires-python=">=3.11"
 dependencies = [
-    "flask>=3.0",
     "textual>=0.80",
 ]
 
