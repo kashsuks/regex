@@ -40,47 +40,47 @@ class RegexApp(App):
             yield MatchTable(id="match-table")
         yield Footer()
 
-        def on_mount(self) -> None:
-            self.query_one("#pattern", Input).focus()
+    def on_mount(self) -> None:
+        self.query_one("#pattern", Input).focus()
 
-        def on_input_change(self, _event: Input.changed) -> None:
-            self._run_match()
+    def on_input_change(self, _event: Input.changed) -> None:
+        self._run_match()
 
-        def on_radio_set_changed(self, _event: RadioSet.Changed) -> None:
-            self._run_match()
+    def on_radio_set_changed(self, _event: RadioSet.Changed) -> None:
+        self._run_match()
 
-        def action_run(self) -> None:
-            self._run_match()
+    def action_run(self) -> None:
+        self._run_match()
 
-        def _run_match(self) -> None:
-            pattern = self.query_one("#pattern", Input).value
-            text = self.query_one("#text", Input).value
-            mode_set = self.query_one("#mode", RadioSet)
-            mode = "all" if mode_set.presed_index == 1 else "first"
+    def _run_match(self) -> None:
+        pattern = self.query_one("#pattern", Input).value
+        text = self.query_one("#text", Input).value
+        mode_set = self.query_one("#mode", RadioSet)
+        mode = "all" if mode_set.presed_index == 1 else "first"
 
-            error_widget = self.query_one("#error-msg", Static)
-            highlight = self.query_one("#highlight-view", HighlightView)
-            table = self.query_one("#match-table", MatchTable)
+        error_widget = self.query_one("#error-msg", Static)
+        highlight = self.query_one("#highlight-view", HighlightView)
+        table = self.query_one("#match-table", MatchTable)
 
-            error_widget.add_class("hidden")
-            error_widget.update("")
-            highlight.clear()
-            table.clear_matches()
+        error_widget.add_class("hidden")
+        error_widget.update("")
+        highlight.clear()
+        table.clear_matches()
 
-            if not pattern:
-                return
+        if not pattern:
+            return
 
-            try:
-                matcher = Matcher(pattern)
-                if mode == "all":
-                    results = matcher.find_all(text)
-                else:
-                    m = matcher.match(text)
-                    results = [m] if m.matched else []
+        try:
+            matcher = Matcher(pattern)
+            if mode == "all":
+                results = matcher.find_all(text)
+            else:
+                m = matcher.match(text)
+                results = [m] if m.matched else []
 
-            except (LexerError, ParseError) as exc:
-                error_widget.update(f"Error: {exc}")
-                error_widget.remove_class("hidden")
+        except (LexerError, ParseError) as exc:
+            error_widget.update(f"Error: {exc}")
+            error_widget.remove_class("hidden")
 
-            highlight.show(text, results)
-            table.show_matches(results)
+        highlight.show(text, results)
+        table.show_matches(results)
