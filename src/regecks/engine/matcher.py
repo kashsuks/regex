@@ -273,7 +273,7 @@ class Matcher:
         numbered: list[str] = []
         if self._groups:
             max_idx = max(self._groups.keys())
-            numbered [
+            numbered = [
                 text[self._groups[i][0]: self._groups[i][1]]
                 if i in self._groups else ""
                 for i in range(1, max_idx + 1)

@@ -164,6 +164,35 @@ class Parser:
         self._expect(TokenType.RPAREN)
         return GroupNode(child=inner, group_index=idx)
 
+    def _parse_group_name(self) -> str:
+        """
+        Parses <name> after (?P - consumes <, the name chars, and >
+        """
+        tok = self._advance()
+        if tok.type != TokenType.LITERAL or tok.value != "<":
+            raise ParseError(
+                f"Expected '<' after (?P but got {tok.value!r}",
+                tok.position,
+            )
+
+        name_chars = []
+        while self._peek().type != TokenType.EOF:
+            tok = self._peek()
+            if tok.type == TokenType.LITERAL and tok.value == ">":
+                self._advance() # consume >
+                break
+            if tok.type != TokenType.LITERAL:
+                raise ParseError(
+                    f"Invalid character in group name: {tok.value!r}",
+                    tok.position,
+                )
+            name_chars.append(self._advance().value)
+
+        if not name_chars:
+            raise ParseError("Group name cannot be empty", -1)
+        
+        return "".join(name_chars)
+
     def _prase_group_name(self) -> str:
         """
         Parses <name> after (?P - consumes <, the name chars, and >
