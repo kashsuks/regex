@@ -82,6 +82,16 @@ class GroupNode(ASTNode):
     child: ASTNode
     group_index: int
 
+@dataclass
+class NonCapturingGroupNode(ASTNode):
+    child: ASTNode
+
+@dataclass
+class NamedGroupNode(ASTNode):
+    child: ASTNode
+    name: str
+    group_index: int
+
 
 @dataclass
 class MatchResult:
@@ -90,6 +100,7 @@ class MatchResult:
     end: int
     span: str
     groups: list[str] = field(default_factory=list)
+    named_groups: dict[str, str] = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return {
@@ -98,4 +109,5 @@ class MatchResult:
             "end": self.end,
             "span": self.span,
             "groups": self.groups,
+            "named_groups": self.named_groups,
         }

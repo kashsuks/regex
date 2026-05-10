@@ -14,6 +14,8 @@ from .models import (
     EscapeNode,
     GroupNode,
     LiteralNode,
+    NamedGroupNode,
+    NonCapturingGroupNode,
     QuantifierNode,
 )
 
@@ -119,16 +121,77 @@ class Parser:
 
         if tok.type == TokenType.LPAREN:
             self._advance()
-            self._group_counter += 1
-            idx = self._group_counter
-            inner = self._parse_alternation()
-            self._expect(TokenType.RPAREN)
-            return GroupNode(child=inner, group_index=idx)
+            return self._parse_group()
 
         raise ParseError(
             f"Unexpected token {tok.type.name} ({tok.value!r}) at position {tok.position}",
             tok.position,
         )
+
+    def _parse_group(self) -> ASTNode:
+        """
+        Handles (, (?:, and (?P<name> and group prefixes
+
+        Called after the opening ( has already been consumed.
+        """
+        
+        if (
+            self._peek().type == TokenType.QUESTION
+            and self._pos + 1 < len(self._tokens)
+        ):
+            next_tok = self._tokens[self._pos + 1]
+
+            if next_tok.type == TokenType.LITERAL and next_tok.value == ":":
+                self._advance() # consume ?
+                self._advance() # consume :
+                inner = self._parse_alternation()
+                self._expect(TokenType.RPAREN)
+                return NonCapturingGroupNode(child=inner)
+
+            if next_tok.type == TokenType.LITERAL and next_tok.value == "P":
+                self._advance() # consime ?
+                self._advance() # consume P
+                name = self._parse_group_name()
+                self._group_counter += 1
+                idx = self._group_counter
+                inner = self._parse_alternation()
+                self._expect(TokenType.RPAREN)
+                return NamedGroupNode(child=inner, name=name, group_index=idx)
+
+        self._group_counter += 1
+        idx = self._group_counter
+        inner = self._parse_alternation()
+        self._expect(TokenType.RPAREN)
+        return GroupNode(child=inner, group_index=idx)
+
+    def _prase_group_name(self) -> str:
+        """
+        Parses <name> after (?P - consumes <, the name chars, and >
+        """
+        tok = self._advance()
+        if tok.type != TokenType.LITERAL or tok.value != "<":
+            raise ParseError(
+                f"Expected '<' after (?P but got {tok.value!r}",
+                tok.position,
+            )
+
+        name_chars = []
+        while self._peek().type() != TokenType.EOF:
+            tok = self._peek()
+            if tok.type == TokenType.LITERAL and tok.value == ">":
+                self._advance() # consume >
+                break
+            if tok.type not in (TokenType.LITERAL,):
+                raise ParseError(
+                    f"Invalid character in group name: {tok.value!r}",
+                    tok.position,
+                )
+            name_chars.append(self._advance().value)
+
+        if not name_chars:
+            raise ParseError("Group name cannot be empty", -1)
+
+        return "".join(name_chars)
 
     def _parse_char_class_token(self, tok: Token) -> CharClassNode:
         """

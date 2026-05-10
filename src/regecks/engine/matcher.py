@@ -14,6 +14,8 @@ from .models import (
     GroupNode,
     LiteralNode,
     MatchResult,
+    NamedGroupNode,
+    NonCapturingGroupNode,
     QuantifierNode,
 )
 from .parser import Parser
@@ -34,19 +36,22 @@ class Matcher:
         parser = Parser(pattern)
         self._ast = parser.parse()
         self._groups: dict[int, tuple[int, int]] = {}
+        self._named_groups: dict[str, tuple[int, int]] = {}
 
     def match(self, text: str) -> MatchResult:
         for start in range(len(text) + 1):
             self._groups = {}
+            self._named_groups = {}
             end = self._match_node(self._ast, text, start)
             if end is not None:
-                groups = self._collect_groups(text)
+                groups, named_groups = self._collect_groups(text)
                 return MatchResult(
                     matched=True,
                     start=start,
                     end=end,
                     span=text[start:end],
                     groups=groups,
+                    named_groups=named_groups,
                 )
         return MatchResult(matched=False, start=-1, end=-1, span="")
 
@@ -58,9 +63,10 @@ class Matcher:
         pos = 0
         while pos <= len(text):
             self._groups = {}
+            self._named_groups = {}
             end = self._match_node(self._ast, text, pos)
             if end is not None:
-                groups = self._collect_groups(text)
+                groups.named_groups = self._collect_groups(text)
                 results.append(
                     MatchResult(
                         matched=True,
@@ -68,6 +74,7 @@ class Matcher:
                         end=end,
                         span=text[pos:end],
                         groups=groups,
+                        named_groups=named_groups,
                     )
                 )
                 pos = end if end > pos else pos + 1
@@ -110,6 +117,13 @@ class Matcher:
 
         if isinstance(node, GroupNode):
             return self._match_group(node, text, pos)
+
+        if isinstance(node, NonCapturingGroupNode):
+            return self._match_node(node.child, text, pos)
+
+        if isinstance(node, NamedGroupNode):
+            return self._match_named_group(node, text, pos)
+
 
         raise RuntimeError(f"Unknown AST node type: {type(node)}")
 
@@ -246,12 +260,26 @@ class Matcher:
             self._groups[node.group_index] = (pos, end)
         return end
 
-    def _collect_groups(self, text: str) -> list[str]:
-        if not self._groups:
-            return []
+    def _match_named_group(
+            self, node: NamedGroupNode, text: str, pos: int
+    ) -> Optional[int]:
+        end = self._match_node(node.child, text, pos)
+        if end is not None:
+            self._groups[node.group_index] = (pos, end)
+            self._named_groups[node.name] = (pos, end)
+        return end
 
-        max_idx = max(self._groups.keys())
-        return [
-            text[self._groups[i][0] : self._groups[i][1]] if i in self._groups else ""
-            for i in range(1, max_idx + 1)
-        ]
+    def _collect_groups(self, text: str) -> list[str]:
+        numbered: list[str] = []
+        if self._groups:
+            max_idx = max(self._groups.keys())
+            numbered [
+                text[self._groups[i][0]: self._groups[i][1]]
+                if i in self._groups else ""
+                for i in range(1, max_idx + 1)
+            ]
+        named = {
+            name: text[start:end]
+            for name, (start, end) in self._named_groups.items()
+        }
+        return numbered, named
