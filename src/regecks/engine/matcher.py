@@ -8,6 +8,7 @@ from .models import (
     AnchorStartNode,
     ASTNode,
     CharClassNode,
+    CaseFoldNode,
     ConcatNode,
     DotNode,
     EscapeNode,
@@ -37,6 +38,7 @@ class Matcher:
         self._ast = parser.parse()
         self._groups: dict[int, tuple[int, int]] = {}
         self._named_groups: dict[str, tuple[int, int]] = {}
+        self._case_insensitive: bool = False
 
     def match(self, text: str) -> MatchResult:
         for start in range(len(text) + 1):
@@ -124,14 +126,29 @@ class Matcher:
         if isinstance(node, NamedGroupNode):
             return self._match_named_group(node, text, pos)
 
+        if isinstance(node, CaseFoldNode):
+            return self._match_case_fold(node, text, pos)
 
         raise RuntimeError(f"Unknown AST node type: {type(node)}")
 
     # node specific matchers
 
+    def _match_case_fold(self, node: CaseFoldNode, text: str, pos: int) -> Optional[int]:
+        previously = self._case_insensitive
+        self._case_insensitive = True
+        result = self._match_node(node.child, text, pos)
+        self._case_insensitive = previously
+        return result
+
     def _match_literal(self, node: LiteralNode, text: str, pos: int) -> Optional[int]:
-        if pos < len(text) and text[pos] == node.char:
-            return pos + 1
+        if pos < len(text):
+            ch = text[pos]
+            expected = node.char
+            if self._case_insensitive:
+                ch = ch.lower()
+                expected = expected.lower()
+            if ch == expected:
+                return pos + 1
         return None
 
     def _match_dot(self, text: str, pos: int) -> Optional[int]:
@@ -183,11 +200,14 @@ class Matcher:
         return pos + 1 if in_class else None
 
     def _char_in_class(self, ch: str, members: str) -> bool:
+        if self._case_insensitive:
+            ch = ch.lower()
         i = 0
         while i < len(members):
-            # range like a-z
             if i + 2 < len(members) and members[i + 1] == "-":
-                if members[i] <= ch <= members[i + 2]:
+                lo = members[i].lower() if self._case_insensitive else members[i]
+                hi = members[i + 2].lower() if self._case_insensitive else members[i + 2]
+                if lo <= ch <= hi:
                     return True
                 i += 3
             elif members[i] == "\\" and i + 1 < len(members):

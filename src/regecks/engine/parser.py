@@ -14,6 +14,7 @@ from .models import (
     EscapeNode,
     GroupNode,
     LiteralNode,
+    CaseFoldNode,
     NamedGroupNode,
     NonCapturingGroupNode,
     QuantifierNode,
@@ -140,6 +141,14 @@ class Parser:
             and self._pos + 1 < len(self._tokens)
         ):
             next_tok = self._tokens[self._pos + 1]
+
+            if next_tok.type == TokenType.LITERAL and next_tok.value == "i":
+                self._advance() # consume ?
+                self._advance() # consume i
+                self._expect(TokenType.RPAREN)
+
+                rest = self._parse_alternation()
+                return CaseFoldNode(child=rest)
 
             if next_tok.type == TokenType.LITERAL and next_tok.value == ":":
                 self._advance() # consume ?

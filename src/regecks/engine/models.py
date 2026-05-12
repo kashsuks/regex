@@ -87,6 +87,13 @@ class NonCapturingGroupNode(ASTNode):
     child: ASTNode
 
 @dataclass
+class CaseFoldNode(ASTNode):
+    """
+    Wraps a child node and matches it case-insensitive
+    """
+    child: ASTNode
+
+@dataclass
 class NamedGroupNode(ASTNode):
     child: ASTNode
     name: str
