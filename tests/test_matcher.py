@@ -37,3 +37,32 @@ class TestNonCapturingAndNamedGroups:
         r = make_match(r"(?:Mr|Ms)\s([A-Z][a-z]+)", "Mr Smith")
         assert r.matched
         assert r.groups == ["Smith"] # only the capturing group
+
+class TestCaseInsensitive:
+    def test_literal_upper(self):
+        r = make_match("(?i)hello", "HELLO")
+        assert r.matched and r.span == "HELLO"
+
+    def test_literal_mixed(self):
+        r = make_match("(?i)hello", "HeLLo")
+        assert r.matched and r.span == "HeLLo"
+
+    def test_without_flag_no_match(self):
+        assert not make_match("hello", "HELLO").matched
+
+    def test_char_class_case_insensitive(self):
+        r = make_match("(?i)[a-z]+", "ABC")
+        assert r.matched and r.span == "ABC"
+
+    def test_flag_only_affects_its_scope(self):
+        # (?i)foo matches FOO, but a subsequent plain pattern does not
+        assert make_match("(?i)foo", "FOO").matched
+        assert not make_match("foo", "FOO").matched
+
+    def test_with_alternation(self):
+        r = make_match("(?i)cat|dog", "CAT")
+        assert r.matched and r.span == "CAT"
+
+    def test_find_all_case_insensitive(self):
+        results = spans("(?i)[a-z]+", "Hello WORLD foo")
+        assert results == ["Hello", "WORLD", "foo"]

@@ -68,7 +68,7 @@ class Matcher:
             self._named_groups = {}
             end = self._match_node(self._ast, text, pos)
             if end is not None:
-                groups.named_groups = self._collect_groups(text)
+                groups, named_groups = self._collect_groups(text)
                 results.append(
                     MatchResult(
                         matched=True,
@@ -289,7 +289,7 @@ class Matcher:
             self._named_groups[node.name] = (pos, end)
         return end
 
-    def _collect_groups(self, text: str) -> list[str]:
+    def _collect_groups(self, text: str) -> tuple[list[str], dict[str, str]]:
         numbered: list[str] = []
         if self._groups:
             max_idx = max(self._groups.keys())
