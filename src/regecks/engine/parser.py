@@ -15,6 +15,8 @@ from .models import (
     GroupNode,
     LiteralNode,
     CaseFoldNode,
+    LookaheadNode,
+    LookbehindNode,
     NamedGroupNode,
     NonCapturingGroupNode,
     QuantifierNode,

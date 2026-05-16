@@ -94,6 +94,24 @@ class CaseFoldNode(ASTNode):
     child: ASTNode
 
 @dataclass
+class LookaheadNode(ASTNode):
+    """
+    (?=...) positive lookahead
+    (?!...) negative lookahead
+    """
+    child: ASTNode
+    positive: bool
+
+@dataclass
+class LookbehindNode(ASTNode):
+    """
+    (?<=...) positive lookbehind
+    (?<!...) negative lookbehind
+    """
+    child: ASTNode
+    positive: bool
+
+@dataclass
 class NamedGroupNode(ASTNode):
     child: ASTNode
     name: str
