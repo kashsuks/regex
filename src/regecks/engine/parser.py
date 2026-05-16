@@ -152,6 +152,39 @@ class Parser:
                 rest = self._parse_alternation()
                 return CaseFoldNode(child=rest)
 
+            if next_tok.type == TokenType.LITERAL and next_tok.value == "=":
+                self._advance() # consume ?
+                self._advance() # consume =
+                inner = self._parse_alternation()
+                self._expect(TokenType.RPAREN)
+                return LookaheadNode(child=inner, positive=True)
+
+            if next_tok.type == TokenType.LITERAL and next_tok.value == "!":
+                self._advance() # consume ?
+                self._advance() # consume !
+                inner = self._parse_alternation()
+                self._expect(TokenType.RPAREN)
+                return LookaheadNode(child=inner, positive=False)
+
+            if next_tok.type == TokenType.LITERAL and next_tok.value == "<":
+                # peek one more to distinguish <= and <! from ?P
+                if self._pos + 2 < len(self._tokens):
+                    after_lt = self._tokens[self._pos + 2]
+                    if after_lt.type == TokenType.LITERAL and after_lt.value == "=":
+                        self._advance() # consume ?
+                        self._advance() # consume
+                        self._advance() # consume =
+                        inner = self._parse_alternation()
+                        self._expect(TokenType.RPAREN)
+                        return LookbehindNode(child=inner, positive=True)
+                    if after_lt.type == TokenType.LITERAL and after_lt.value == "!":
+                        self._advance() # consume ?
+                        self._advance() # consume
+                        self._advance() # consume !
+                        inner = self._parse_alternation()
+                        self._expect(TokenType.RPAREN)
+                        return LookbehindNode(child=inner, positive=False)
+
             if next_tok.type == TokenType.LITERAL and next_tok.value == ":":
                 self._advance() # consume ?
                 self._advance() # consume :

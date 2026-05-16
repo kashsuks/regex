@@ -66,3 +66,50 @@ class TestCaseInsensitive:
     def test_find_all_case_insensitive(self):
         results = spans("(?i)[a-z]+", "Hello WORLD foo")
         assert results == ["Hello", "WORLD", "foo"]
+
+class TestLookahead:
+    def test_positive_lookahead_matches(self):
+        r = make_match(r"foo(?=bar)", "foobar")
+        assert r.matched and r.span == "foo"
+
+    def test_positive_lookahead_no_match(self):
+        assert not make_match(r"foo(?=bar)", "foobaz").matched
+
+    def test_positive_lookahead_does_not_consume(self):
+        # the bar should still be available after the lookahead
+        r = make_match(r"foo(?=bar)bar", "foobar")
+        assert r.matched and r.span == "foobar"
+
+    def test_negative_lookahead_matches(self):
+        r = make_match(r"foo(?!bar)", "foobaz")
+        assert r.matched and r.span == "foo"
+
+    def test_negative_lookahead_no_match(self):
+        assert not make_match(r"foo(?!bar)", "foobar").matched
+
+    def test_lookahead_with_find_all(self):
+        # match digits only if followed by px
+        results = spans(r"\d+(?=px)", "10px 20em 30px")
+        assert results == ["10", "30"]
+
+class TestLookbehind:
+    def test_positive_lookbehind_matches(self):
+        # "bar" only if preceded by "foo"
+        r = make_match(r"(?<=foo)bar", "foobar")
+        assert r.matched and r.span == "bar"
+
+    def test_positive_lookbehind_no_match(self):
+        assert not make_match(r"(?<=foo)bar", "bazbar").matched
+
+    def test_positive_lookbehind_does_not_consume(self):
+        # foo should not be part of this span
+        r = make_match(r"(?<=foo)bar", "foobar")
+        assert r.span == "bar"
+        assert r.start == 3
+
+    def test_negative_lookbehind_no_match(self):
+        assert not make_match(r"(?<!foo)bar", "foobar").matched
+
+    def test_lookbehind_with_find_all(self):
+        results = spans(r"(?<=\$)\d+", "cost $10 and $20 not 30")
+        assert results == ["10", "20"]

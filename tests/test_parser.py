@@ -9,7 +9,9 @@ from regecks.engine.models import (
     DotNode,
     EscapeNode,
     LiteralNode,
-    GroupNode, 
+    GroupNode,
+    LookbehindNode,
+    LookaheadNode,
     NamedGroupNode,
     NonCapturingGroupNode,
     QuantifierNode,
@@ -44,3 +46,40 @@ class TestNonCapturingAndNamedGroups:
         assert isinstance(node, ConcatNode)
         group = next(c for c in node.children if isinstance(c, GroupNode))
         assert group.group_index == 1
+
+class TestLookaheadLookbehind:
+    def test_positive_lookahead_node(self):
+        node = parse(r"foo(?=bar)")
+        assert isinstance(node, ConcatNode)
+        la = node.children[-1]
+        assert isinstance(la, LookaheadNode)
+        assert la.positive is True
+
+    def test_negative_lookahead_node(self):
+        node = parse(r"foo(?!bar)")
+        assert isinstance(node, ConcatNode)
+        la = node.children[-1]
+        assert isinstance(la, LookaheadNode)
+        assert la.positive is False
+
+    def test_positive_lookbehind_node(self):
+        node = parse(r"(?<=foo)bar")
+        assert isinstance(node, ConcatNode)
+        lb = node.children[0]
+        assert isinstance(lb, LookbehindNode)
+        assert lb.positive is True
+
+    def test_negative_lookbehind_node(self):
+        node = parse(r"(?<!foo)bar")
+        assert isinstance(node, ConcatNode)
+        lb = node.children[0]
+        assert isinstance(lb, LookbehindNode)
+        assert lb.positive is False
+
+    def test_lookahead_does_not_capture(self):
+        # lookahead should not add to group counter
+        node = parse(r"(a)(?=b)(c)")
+        assert isinstance(node, ConcatNode)
+        groups = [c for c in node.children if isinstance(c, GroupNode)]
+        assert groups[0].group_index == 1
+        assert groups[1].group_index == 2

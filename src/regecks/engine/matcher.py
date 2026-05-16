@@ -14,6 +14,8 @@ from .models import (
     EscapeNode,
     GroupNode,
     LiteralNode,
+    LookaheadNode,
+    LookbehindNode,
     MatchResult,
     NamedGroupNode,
     NonCapturingGroupNode,
@@ -129,9 +131,44 @@ class Matcher:
         if isinstance(node, CaseFoldNode):
             return self._match_case_fold(node, text, pos)
 
+        if isinstance(node, LookaheadNode):
+            return self._match_lookahead(node, text, pos)
+        
+        if isinstance(node, LookbehindNode):
+            return self._match_lookbehind(node, text, pos)
+
         raise RuntimeError(f"Unknown AST node type: {type(node)}")
 
     # node specific matchers
+
+    def _match_lookahead(self, node: LookaheadNode, text: str, pos: int) -> Optional[int]:
+        """
+        match child at pos without consuming any input
+        """
+        result = self._match_node(node.child, text, pos)
+        matched = result is not None
+        if node.positive:
+            return pos if matched else None
+        else:
+            return pos if not matched else None
+
+    def _match_lookbehind(self, node: LookbehindNode, text: str, pos: int) -> Optional[int]:
+        """
+        try to match child ending at pos
+
+        do this by trying all start positions and see if any
+        of them match the child and end exactly at pos
+        """
+        matched = False
+        for start in range(pos + 1):
+            result = self._match_node(node.child, text, start)
+            if result == pos:
+                matched = True
+                break
+        if node.positive:
+            return pos if matched else None
+        else:
+            return pos if not matched else None
 
     def _match_case_fold(self, node: CaseFoldNode, text: str, pos: int) -> Optional[int]:
         previously = self._case_insensitive
