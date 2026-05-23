@@ -137,31 +137,30 @@ class Parser:
 
         Called after the opening ( has already been consumed.
         """
-        
-        if (
-            self._peek().type == TokenType.QUESTION
-            and self._pos + 1 < len(self._tokens)
+
+        if self._peek().type == TokenType.QUESTION and self._pos + 1 < len(
+            self._tokens
         ):
             next_tok = self._tokens[self._pos + 1]
 
             if next_tok.type == TokenType.LITERAL and next_tok.value == "i":
-                self._advance() # consume ?
-                self._advance() # consume i
+                self._advance()  # consume ?
+                self._advance()  # consume i
                 self._expect(TokenType.RPAREN)
 
                 rest = self._parse_alternation()
                 return CaseFoldNode(child=rest)
 
             if next_tok.type == TokenType.LITERAL and next_tok.value == "=":
-                self._advance() # consume ?
-                self._advance() # consume =
+                self._advance()  # consume ?
+                self._advance()  # consume =
                 inner = self._parse_alternation()
                 self._expect(TokenType.RPAREN)
                 return LookaheadNode(child=inner, positive=True)
 
             if next_tok.type == TokenType.LITERAL and next_tok.value == "!":
-                self._advance() # consume ?
-                self._advance() # consume !
+                self._advance()  # consume ?
+                self._advance()  # consume !
                 inner = self._parse_alternation()
                 self._expect(TokenType.RPAREN)
                 return LookaheadNode(child=inner, positive=False)
@@ -171,30 +170,30 @@ class Parser:
                 if self._pos + 2 < len(self._tokens):
                     after_lt = self._tokens[self._pos + 2]
                     if after_lt.type == TokenType.LITERAL and after_lt.value == "=":
-                        self._advance() # consume ?
-                        self._advance() # consume
-                        self._advance() # consume =
+                        self._advance()  # consume ?
+                        self._advance()  # consume
+                        self._advance()  # consume =
                         inner = self._parse_alternation()
                         self._expect(TokenType.RPAREN)
                         return LookbehindNode(child=inner, positive=True)
                     if after_lt.type == TokenType.LITERAL and after_lt.value == "!":
-                        self._advance() # consume ?
-                        self._advance() # consume
-                        self._advance() # consume !
+                        self._advance()  # consume ?
+                        self._advance()  # consume
+                        self._advance()  # consume !
                         inner = self._parse_alternation()
                         self._expect(TokenType.RPAREN)
                         return LookbehindNode(child=inner, positive=False)
 
             if next_tok.type == TokenType.LITERAL and next_tok.value == ":":
-                self._advance() # consume ?
-                self._advance() # consume :
+                self._advance()  # consume ?
+                self._advance()  # consume :
                 inner = self._parse_alternation()
                 self._expect(TokenType.RPAREN)
                 return NonCapturingGroupNode(child=inner)
 
             if next_tok.type == TokenType.LITERAL and next_tok.value == "P":
-                self._advance() # consime ?
-                self._advance() # consume P
+                self._advance()  # consime ?
+                self._advance()  # consume P
                 name = self._parse_group_name()
                 self._group_counter += 1
                 idx = self._group_counter
@@ -223,7 +222,7 @@ class Parser:
         while self._peek().type != TokenType.EOF:
             tok = self._peek()
             if tok.type == TokenType.LITERAL and tok.value == ">":
-                self._advance() # consume >
+                self._advance()  # consume >
                 break
             if tok.type != TokenType.LITERAL:
                 raise ParseError(
@@ -234,7 +233,7 @@ class Parser:
 
         if not name_chars:
             raise ParseError("Group name cannot be empty", -1)
-        
+
         return "".join(name_chars)
 
     def _prase_group_name(self) -> str:
@@ -252,7 +251,7 @@ class Parser:
         while self._peek().type() != TokenType.EOF:
             tok = self._peek()
             if tok.type == TokenType.LITERAL and tok.value == ">":
-                self._advance() # consume >
+                self._advance()  # consume >
                 break
             if tok.type not in (TokenType.LITERAL,):
                 raise ParseError(

@@ -18,8 +18,10 @@ from regecks.engine.models import (
 )
 from regecks.engine.parser import Parser, ParseError
 
+
 def parse(pattern: str) -> ASTNode:
     return Parser(pattern).parse()
+
 
 class TestNonCapturingAndNamedGroups:
     def test_non_capturing_group(self):
@@ -46,6 +48,7 @@ class TestNonCapturingAndNamedGroups:
         assert isinstance(node, ConcatNode)
         group = next(c for c in node.children if isinstance(c, GroupNode))
         assert group.group_index == 1
+
 
 class TestLookaheadLookbehind:
     def test_positive_lookahead_node(self):

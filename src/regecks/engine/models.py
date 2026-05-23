@@ -82,16 +82,20 @@ class GroupNode(ASTNode):
     child: ASTNode
     group_index: int
 
+
 @dataclass
 class NonCapturingGroupNode(ASTNode):
     child: ASTNode
+
 
 @dataclass
 class CaseFoldNode(ASTNode):
     """
     Wraps a child node and matches it case-insensitive
     """
+
     child: ASTNode
+
 
 @dataclass
 class LookaheadNode(ASTNode):
@@ -99,8 +103,10 @@ class LookaheadNode(ASTNode):
     (?=...) positive lookahead
     (?!...) negative lookahead
     """
+
     child: ASTNode
     positive: bool
+
 
 @dataclass
 class LookbehindNode(ASTNode):
@@ -108,8 +114,10 @@ class LookbehindNode(ASTNode):
     (?<=...) positive lookbehind
     (?<!...) negative lookbehind
     """
+
     child: ASTNode
     positive: bool
+
 
 @dataclass
 class NamedGroupNode(ASTNode):

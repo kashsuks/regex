@@ -133,7 +133,7 @@ class Matcher:
 
         if isinstance(node, LookaheadNode):
             return self._match_lookahead(node, text, pos)
-        
+
         if isinstance(node, LookbehindNode):
             return self._match_lookbehind(node, text, pos)
 
@@ -141,7 +141,9 @@ class Matcher:
 
     # node specific matchers
 
-    def _match_lookahead(self, node: LookaheadNode, text: str, pos: int) -> Optional[int]:
+    def _match_lookahead(
+        self, node: LookaheadNode, text: str, pos: int
+    ) -> Optional[int]:
         """
         match child at pos without consuming any input
         """
@@ -152,7 +154,9 @@ class Matcher:
         else:
             return pos if not matched else None
 
-    def _match_lookbehind(self, node: LookbehindNode, text: str, pos: int) -> Optional[int]:
+    def _match_lookbehind(
+        self, node: LookbehindNode, text: str, pos: int
+    ) -> Optional[int]:
         """
         try to match child ending at pos
 
@@ -170,7 +174,9 @@ class Matcher:
         else:
             return pos if not matched else None
 
-    def _match_case_fold(self, node: CaseFoldNode, text: str, pos: int) -> Optional[int]:
+    def _match_case_fold(
+        self, node: CaseFoldNode, text: str, pos: int
+    ) -> Optional[int]:
         previously = self._case_insensitive
         self._case_insensitive = True
         result = self._match_node(node.child, text, pos)
@@ -243,7 +249,9 @@ class Matcher:
         while i < len(members):
             if i + 2 < len(members) and members[i + 1] == "-":
                 lo = members[i].lower() if self._case_insensitive else members[i]
-                hi = members[i + 2].lower() if self._case_insensitive else members[i + 2]
+                hi = (
+                    members[i + 2].lower() if self._case_insensitive else members[i + 2]
+                )
                 if lo <= ch <= hi:
                     return True
                 i += 3
@@ -318,7 +326,7 @@ class Matcher:
         return end
 
     def _match_named_group(
-            self, node: NamedGroupNode, text: str, pos: int
+        self, node: NamedGroupNode, text: str, pos: int
     ) -> Optional[int]:
         end = self._match_node(node.child, text, pos)
         if end is not None:
@@ -331,12 +339,12 @@ class Matcher:
         if self._groups:
             max_idx = max(self._groups.keys())
             numbered = [
-                text[self._groups[i][0]: self._groups[i][1]]
-                if i in self._groups else ""
+                text[self._groups[i][0] : self._groups[i][1]]
+                if i in self._groups
+                else ""
                 for i in range(1, max_idx + 1)
             ]
         named = {
-            name: text[start:end]
-            for name, (start, end) in self._named_groups.items()
+            name: text[start:end] for name, (start, end) in self._named_groups.items()
         }
         return numbered, named

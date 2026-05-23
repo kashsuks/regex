@@ -1,5 +1,6 @@
 from helpers import make_match, make_all, spans
 
+
 class TestNonCapturingAndNamedGroups:
     def test_non_capturing_group_matches(self):
         r = make_match("(?:abc)", "xabcy")
@@ -36,7 +37,8 @@ class TestNonCapturingAndNamedGroups:
     def test_mixed_capturing_and_non_capturing(self):
         r = make_match(r"(?:Mr|Ms)\s([A-Z][a-z]+)", "Mr Smith")
         assert r.matched
-        assert r.groups == ["Smith"] # only the capturing group
+        assert r.groups == ["Smith"]  # only the capturing group
+
 
 class TestCaseInsensitive:
     def test_literal_upper(self):
@@ -67,6 +69,7 @@ class TestCaseInsensitive:
         results = spans("(?i)[a-z]+", "Hello WORLD foo")
         assert results == ["Hello", "WORLD", "foo"]
 
+
 class TestLookahead:
     def test_positive_lookahead_matches(self):
         r = make_match(r"foo(?=bar)", "foobar")
@@ -91,6 +94,7 @@ class TestLookahead:
         # match digits only if followed by px
         results = spans(r"\d+(?=px)", "10px 20em 30px")
         assert results == ["10", "30"]
+
 
 class TestLookbehind:
     def test_positive_lookbehind_matches(self):
