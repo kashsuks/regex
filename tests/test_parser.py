@@ -15,6 +15,7 @@ from regecks.engine.models import (
     NamedGroupNode,
     NonCapturingGroupNode,
     QuantifierNode,
+    WordBoundaryNode,
 )
 from regecks.engine.parser import Parser, ParseError
 
@@ -86,3 +87,24 @@ class TestLookaheadLookbehind:
         groups = [c for c in node.children if isinstance(c, GroupNode)]
         assert groups[0].group_index == 1
         assert groups[1].group_index == 2
+
+class TestWordBoundary:
+    def test_boundary_node_positive(self):
+        node = parse(r"\b")
+        assert isinstance(node, WordBoundaryNode)
+        assert node.positive is True
+
+    def test_boundary_node_negative(self):
+        node = parse(r"\B")
+        assert isinstance(node, WordBoundaryNode)
+        assert node.positive is False
+
+    def test_boundary_does_not_produce_escape_node(self):
+        node = parse(r"\b")
+        assert not isinstance(node, EscapeNode)
+
+    def test_boundary_in_sequence(self):
+        node = parse(r"\bfoo\b")
+        assert isinstance(node, ConcatNode)
+        assert isinstance(node.children[0], WordBoundaryNode)
+        assert isinstance(node.children[-1], WordBoundaryNode)

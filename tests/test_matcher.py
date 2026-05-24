@@ -117,3 +117,43 @@ class TestLookbehind:
     def test_lookbehind_with_find_all(self):
         results = spans(r"(?<=\$)\d+", "cost $10 and $20 not 30")
         assert results == ["10", "20"]
+
+class TestWordBoundary:
+    def test_boundary_at_start_of_word(self):
+        r = make_match(r"\bcat", "the cat sat")
+        assert r.matched and r.span == "cat"
+
+    def test_boundary_at_end_of_word(self):
+        r = make_match(r"cat\b", "the cat sat")
+        assert r.matched and r.span == "cat"
+
+    def test_boundary_whole_word(self):
+        r = make_match(r"\bcat\b", "the cat sat")
+        assert r.matched and r.span == "cat"
+
+    def test_boundary_no_match_inside_word(self):
+        # "cat" inside "concatenate" should not match \bcat\b
+        assert not make_match(r"\bcat\b", "concatenate").matched
+
+    def test_boundary_at_start_of_string(self):
+        r = make_match(r"\bhello", "hello world")
+        assert r.matched and r.span == "hello"
+
+    def test_boundary_at_end_of_string(self):
+        r = make_match(r"world\b", "hello world")
+        assert r.matched and r.span == "world"
+
+    def test_negative_boundary_inside_word(self):
+        r = make_match(r"cat\B", "concatenate")
+        assert r.matched and r.span == "cat"
+
+    def test_negative_boundary_no_match_at_word_end(self):
+        assert not make_match(r"cat\B", "the cat sat").matched
+
+    def test_find_all_whole_words(self):
+        results = spans(r"\b\w+\b", "one two three")
+        assert results == ["one", "two", "three"]
+
+    def test_boundary_with_digits(self):
+        results = spans(r"\b\d+\b", "item1 42 3px")
+        assert results == ["42"]

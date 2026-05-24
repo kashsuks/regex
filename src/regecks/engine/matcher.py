@@ -16,6 +16,7 @@ from .models import (
     LiteralNode,
     LookaheadNode,
     LookbehindNode,
+    WordBoundaryNode,
     MatchResult,
     NamedGroupNode,
     NonCapturingGroupNode,
@@ -137,9 +138,36 @@ class Matcher:
         if isinstance(node, LookbehindNode):
             return self._match_lookbehind(node, text, pos)
 
+        if isinstance(node, WordBoundaryNode):
+            return self._match_word_boundary(node, text, pos)
+
         raise RuntimeError(f"Unknown AST node type: {type(node)}")
 
     # node specific matchers
+
+    @staticmethod
+    def _is_word_char(ch: str) -> bool:
+        return ch.isalnum() or ch == "_"
+
+    def _match_word_boundary(
+        self, node: WordBoundaryNode, text: str, pos: int    
+        ) -> Optional[int]:
+        """
+        a boundary exists at pos when the char before and after differ
+        in word-char status.
+        """
+        before = text[pos - 1] if pos > 0 else None
+        after = text[pos] if pos < len(text) else None
+
+        before_is_word = self._is_word_char(before) if before is not None else False
+        after_is_word = self._is_word_char(after) if after is not None else False
+
+        at_boundary = before_is_word != after_is_word
+
+        if node.positive:
+            return pos if at_boundary else None
+        else:
+            return pos if not at_boundary else None
 
     def _match_lookahead(
         self, node: LookaheadNode, text: str, pos: int

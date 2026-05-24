@@ -96,6 +96,14 @@ class CaseFoldNode(ASTNode):
 
     child: ASTNode
 
+@dataclass
+class WordBoundaryNode(ASTNode):
+    """
+    \\b - asserts position is at a word boundary
+    \\B - asserts position is NOT at a word boundary
+    """
+    positive: bool
+
 
 @dataclass
 class LookaheadNode(ASTNode):

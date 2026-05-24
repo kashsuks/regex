@@ -17,6 +17,7 @@ from .models import (
     CaseFoldNode,
     LookaheadNode,
     LookbehindNode,
+    WordBoundaryNode,
     NamedGroupNode,
     NonCapturingGroupNode,
     QuantifierNode,
@@ -116,6 +117,10 @@ class Parser:
 
         if tok.type == TokenType.ESCAPE:
             self._advance()
+            if tok.value == r"\b":
+                return WordBoundaryNode(positive=True)
+            if tok.value == r"\B":
+                return WordBoundaryNode(positive=False)
             return EscapeNode(sequence=tok.value)
 
         if tok.type == TokenType.CHAR_CLASS:
