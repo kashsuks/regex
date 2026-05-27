@@ -141,6 +141,9 @@ class Parser:
         Handles (, (?:, and (?P<name> and group prefixes
 
         Called after the opening ( has already been consumed.
+
+        Returns:
+        (ASTNode) -> Nodes of each parsed group 
         """
 
         if self._peek().type == TokenType.QUESTION and self._pos + 1 < len(
@@ -215,6 +218,9 @@ class Parser:
     def _parse_group_name(self) -> str:
         """
         Parses <name> after (?P - consumes <, the name chars, and >
+
+        Returns:
+        (str) -> final parsed group name with consuming
         """
         tok = self._advance()
         if tok.type != TokenType.LITERAL or tok.value != "<":
