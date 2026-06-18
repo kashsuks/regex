@@ -123,3 +123,7 @@ The flags wrap everything that follows it in a pattern
 ### Lookahead and lookbehind
 
 These are zero-width assertions meaning they check for a condition without consuming characters.
+
+## AI Usage
+
+Claude code was used in this project for debugging the ui and parts of the lexer
