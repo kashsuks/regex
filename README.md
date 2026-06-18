@@ -3,7 +3,14 @@
 
  Ever part of this including stuff like the lexer, parser, the ast, and the backtracking were written by hand :)
 
- ## Installation
+ ## User Installation
+
+ ```bash
+ pip install regecks
+ regecks
+ ```
+
+ ## Dev Installation
 
  Requires [uv](https://docs.astral.sh/uv/)
 
