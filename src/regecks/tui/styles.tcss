@@ -53,8 +53,8 @@ Input:focus {
 }
 
 HighlightView {
-    height: auto,
-    min-height: 3,
+    height: auto;
+    min-height: 3;
     border: solid $surface-lighten-2;
     padding: 0 1;
     margin-top: 1;
