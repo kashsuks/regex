@@ -17,6 +17,10 @@ Input {
     margin-bottom: 0;
 }
 
+Input:focus {
+    border: tall $accent;
+}
+
 #controls {
     margin-top: 1;
     height: auto;
@@ -37,6 +41,40 @@ Input {
     padding: 0 1;
     margin-top: 1;
     height: auto;
+}
+
+#match-count {
+    color: $success;
+    background: $success 10%;
+    padding: 0 1;
+    margin-top: 1;
+    height: auto;
+    text-style: bold;
+}
+
+HighlightView {
+    height: auto,
+    min-height: 3,
+    border: solid $surface-lighten-2;
+    padding: 0 1;
+    margin-top: 1;
+    background: $surface;
+}
+
+MatchTable {
+    height: auto;
+    min-height: 5;
+    margin-top: 1;
+}
+
+DataTable {
+    background: $surface;
+}
+
+DataTable > .datatable--header {
+    background: $surface-lighten-1;
+    color: $text-muted;
+    text-style: bold;
 }
 
 .hidden {

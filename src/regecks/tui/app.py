@@ -36,6 +36,7 @@ class RegexApp(App):
                         yield RadioButton("First match", value=True, id="mode-first")
                         yield RadioButton("All matches", id="mode-all")
             yield Static("", id="error-msg", classes="hidden")
+            yield Static("", id="match-count", classes="hidden")
             yield HighlightView(id="highlight-view")
             yield MatchTable(id="match-table")
         yield Footer()
@@ -43,7 +44,7 @@ class RegexApp(App):
     def on_mount(self) -> None:
         self.query_one("#pattern", Input).focus()
 
-    def on_input_change(self, _event: Input.changed) -> None:
+    def on_input_change(self, _event: Input.Changed) -> None:
         self._run_match()
 
     def on_radio_set_changed(self, _event: RadioSet.Changed) -> None:
@@ -52,11 +53,20 @@ class RegexApp(App):
     def action_run(self) -> None:
         self._run_match()
 
+    def _update_match_count(self, count: int) -> None:
+        widget = self.query_one("#match-count", Static)
+        if count == 0:
+            widget.add_class("hidden")
+        else:
+            noun = "match" if count == 1 else "matches"
+            widget.update(f"{count} {noun} found")
+            widget.remove_class("hidden")
+
     def _run_match(self) -> None:
         pattern = self.query_one("#pattern", Input).value
         text = self.query_one("#text", Input).value
         mode_set = self.query_one("#mode", RadioSet)
-        mode = "all" if mode_set.presed_index == 1 else "first"
+        mode = "all" if mode_set.pressed_index == 1 else "first"
 
         error_widget = self.query_one("#error-msg", Static)
         highlight = self.query_one("#highlight-view", HighlightView)
@@ -64,6 +74,7 @@ class RegexApp(App):
 
         error_widget.add_class("hidden")
         error_widget.update("")
+        self.query_one("#match-count", Static).add_class("hidden")
         highlight.clear()
         table.clear_matches()
 
@@ -81,6 +92,8 @@ class RegexApp(App):
         except (LexerError, ParseError) as exc:
             error_widget.update(f"Error: {exc}")
             error_widget.remove_class("hidden")
+            return
 
         highlight.show(text, results)
         table.show_matches(results)
+        self._update_match_count(len(results))

@@ -9,15 +9,6 @@ from regecks.engine.models import MatchResult
 
 
 class HighlightView(Widget):
-    DEFAULT_CSS = """
-    HighlightView {
-        height: auto;
-        min-height: 3;
-        border: solid $surface-lighten-2;
-        padding: 0 1;
-        margin-top: 1;
-    }
-    """
 
     def compose(self) -> ComposeResult:
         yield Static("", id="highlight-text")
@@ -49,17 +40,10 @@ class HighlightView(Widget):
 
 
 class MatchTable(Widget):
-    DEFAULT_CSS = """
-    MatchTable {
-        height: auto;
-        min-height: 4;
-        margin-top: 1;
-    }
-    """
 
     def compose(self) -> ComposeResult:
         table: DataTable = DataTable(id="results-table", show_cursor=False)
-        table.add_columns("#", "Match", "Start", "End", "Groups")
+        table.add_columns("#", "Match", "Start", "End", "Groups", "")
         yield table
 
     def clear_matches(self) -> None:
@@ -70,4 +54,9 @@ class MatchTable(Widget):
         table.clear()
         for i, r in enumerate(results, start=1):
             groups = ", ".join(r.groups) if r.groups else "-"
-            table.add_row(str(i), r.span, str(r.start), str(r.end))
+            named = (
+                ", ".join(f"{k}={v}" for k, v in r.named_groups.items())
+                if r.named_groups
+                else "-"
+            )
+            table.add_row(str(i), r.span, str(r.start), str(r.end), groups, named)
