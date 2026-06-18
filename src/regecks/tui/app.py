@@ -12,7 +12,7 @@ from regecks.engine.parser import ParseError
 from .widgets import HighlightView, MatchTable
 
 
-class RegexApp(App):
+class Regecks(App):
     CSS_PATH = "styles.tcss"
 
     BINDINGS = [

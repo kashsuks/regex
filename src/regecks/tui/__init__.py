@@ -1,1 +1,1 @@
-from .app import RegexApp
+from .app import Regecks

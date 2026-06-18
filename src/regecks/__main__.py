@@ -4,6 +4,6 @@ Main entry point for the tui app
 
 
 def main() -> None:
-    from regecks.tui.app import RegexApp
+    from regecks.tui.app import Regecks
 
-    RegexApp().run()
+    Regecks().run()
